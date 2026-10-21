@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="ptz_camera" params="parent_link *origin">
+
+    <!-- Camera Base Link -->
+    <link name="camera_base_link">
+      <visual>
+        <origin xyz="0 0 0.10" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.30" length="0.20"/>
+        </geometry>
+        <material name="base_material">
+          <color rgba="0.25 0.25 0.25 1.0"/>
+        </material>
+      </visual>
+    </link>
+
+    <!-- Connect Camera Base to the LiDAR Parent Link -->
+    <joint name="camera_base_joint" type="fixed">
+      <parent link="${parent_link}"/>
+      <child link="camera_base_link"/>
+      <xacro:insert_block name="origin"/>
+    </joint>
+
+    <!-- Pan Link -->
+    <link name="pan_link">
+      <visual>
+        <origin xyz="0 0 0.15" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.22" length="0.10"/>
+        </geometry>
+        <material name="pan_material">
+          <!-- <color rgba="0.15 0.15 0.15 1.0"/> -->
+          <!-- <color rgba="1.0 0.0 0.0 1.0"/> -->
+          <color rgba="0.0 0.0 1.0 1.0"/>
+          <!-- <color rgba="1.0 1.0 0.0 1.0"/> -->
+        </material>
+      </visual>
+    </link>
+
+    <joint name="pan_joint" type="continuous">
+      <parent link="camera_base_link"/>
+      <child link="pan_link"/>
+      <origin xyz="0 0 0.20" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <!-- <limit lower="-3.14159" upper="3.14159" effort="10" velocity="1.0"/> -->
+      <limit effort="10" velocity="1.0"/>
+    </joint>
+
+    <!-- Tilt Body -->
+    <link name="tilt_link">
+      <visual>
+        <origin xyz="0 0 0.18" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.18 0.18 0.36"/>
+        </geometry>
+        <material name="tilt_material">
+          <!-- <color rgba="0.30 0.30 0.30 1.0"/> -->
+          <color rgba="1.0 0.0 0.0 1.0"/>
+
+        </material>
+      </visual>
+    </link>
+
+    <joint name="tilt_joint" type="revolute">
+      <parent link="pan_link"/>
+      <child link="tilt_link"/>
+      <origin xyz="0 0 0.20" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.0472" upper="1.0472" effort="10" velocity="1.0"/>
+    </joint>
+
+    <!-- Camera Body -->
+    <link name="camera_link">
+      <visual>
+        <origin xyz="0.20 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.40 0.20 0.20"/>
+        </geometry>
+        <material name="camera_material">
+          <color rgba="0.05 0.05 0.05 1.0"/>
+        </material>
+      </visual>
+    </link>
+
+    <joint name="camera_joint" type="fixed">
+      <parent link="tilt_link"/>
+      <child link="camera_link"/>
+      <origin xyz="0 0 0.36" rpy="0 0 0"/>
+    </joint>
+
+    <!-- ============================================================ -->
+    <!-- 5. CAMERA SENSOR FRAME (Edge Center of camera_link Box)     -->
+    <!-- ============================================================ -->
+
+    <!-- Use explicit open & close tags for empty dummy links -->
+    <link name="camera_sensor_link"></link>
+
+    <joint name="camera_sensor_joint" type="fixed">
+      <parent link="camera_link"/>
+      <child link="camera_sensor_link"/>
+      <origin xyz="0.40 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <!-- 6. Camera Optical Frame -->
+    <link name="camera_optical_frame"></link>
+
+    <joint name="camera_optical_joint" type="fixed">
+      <parent link="camera_sensor_link"/>
+      <child link="camera_optical_frame"/>
+      <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+    </joint>
+
+
+        <!-- Gazebo Sim PTZ camera sensor -->
+    <gazebo reference="camera_link">
+      <sensor name="ptz_camera" type="camera">
+        <pose>0.40 0 0 0 0 0</pose>
+        <topic>/ptz_camera</topic>
+        <update_rate>5</update_rate>
+        <always_on>true</always_on>
+        <visualize>false</visualize>
+
+        <camera>
+          <horizontal_fov>1.0472</horizontal_fov>
+          <image>
+            <width>640</width>
+            <height>480</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.05</near>
+            <far>150.0</far>
+          </clip>
+        </camera>
+
+        <gz_frame_id>camera_link</gz_frame_id>
+      </sensor>
+    </gazebo>
+
+  </xacro:macro>
+
+</robot>

@@ -1,0 +1,185 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+
+  <model name="ptz_camera">
+
+    <!-- Joint Position Controllers for Gazebo Sim -->
+    <plugin filename="gz-sim-joint-controller-system"
+        name="gz::sim::systems::JointController">
+      <joint_name>pan_joint</joint_name>
+      <topic>/ptz_camera/pan_vel_cmd</topic>
+      <initial_velocity>0.0</initial_velocity>
+    </plugin>
+
+    <plugin filename="gz-sim-joint-position-controller-system"
+        name="gz::sim::systems::JointPositionController">
+      <joint_name>tilt_joint</joint_name>
+      <topic>/ptz_camera/tilt_cmd</topic>
+      <p_gain>100.0</p_gain>
+      <i_gain>0.1</i_gain>
+      <d_gain>1.0</d_gain>
+      <i_max>1.0</i_max>
+      <i_min>-1.0</i_min>
+      <cmd_max>20.0</cmd_max>
+      <cmd_min>-20.0</cmd_min>
+    </plugin>
+
+    <!-- Publish the simulated joint positions so the controller and RViz use
+         the mechanism's actual state, rather than the requested command. -->
+    <plugin filename="gz-sim-joint-state-publisher-system"
+        name="gz::sim::systems::JointStatePublisher">
+      <topic>/world/iris_runway/model/ptz_camera/joint_state</topic>
+      <joint_name>pan_joint</joint_name>
+      <joint_name>tilt_joint</joint_name>
+      <update_rate>30</update_rate>
+    </plugin>
+
+    <!-- FIX camera_base_link TO WORLD FRAME (Prevents falling without using static=true) -->
+    <joint name="world_fixed_joint" type="fixed">
+      <parent>world</parent>
+      <child>camera_base_link</child>
+    </joint>
+
+    <!-- 1. CAMERA BASE LINK -->
+    <link name="camera_base_link">
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>0.5</mass>
+        <inertia>
+          <ixx>0.005</ixx><iyy>0.005</iyy><izz>0.005</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="base_visual">
+        <pose>0 0 0.10 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.30</radius>
+            <length>0.20</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.25 0.25 0.25 1.0</ambient>
+          <diffuse>0.25 0.25 0.25 1.0</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- 2. PAN LINK -->
+    <link name="pan_link">
+      <pose>0 0 0.20 0 0 0</pose>
+      <inertial>
+        <mass>0.3</mass>
+        <inertia>
+          <ixx>0.003</ixx><iyy>0.003</iyy><izz>0.003</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="pan_visual">
+        <pose>0 0 0.15 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.22</radius>
+            <length>0.10</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.0 0.0 1.0 1.0</ambient>
+          <diffuse>0.0 0.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- Wide-range revolute joint approximates continuous pan while avoiding
+         continuous-joint handling issues in this physics setup. -->
+    <joint name="pan_joint" type="revolute">
+      <parent>camera_base_link</parent>
+      <child>pan_link</child>
+      <pose>0 0 0 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1000000</lower>
+          <upper>1000000</upper>
+        </limit>
+        <dynamics>
+          <damping>0.1</damping>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <!-- 3. TILT LINK -->
+    <link name="tilt_link">
+      <pose>0 0 0.40 0 0 0</pose>
+      <inertial>
+        <mass>0.4</mass>
+        <inertia>
+          <ixx>0.004</ixx><iyy>0.004</iyy><izz>0.004</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="tilt_visual">
+        <pose>0 0 0.18 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.18 0.18 0.36</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>1.0 0.0 0.0 1.0</ambient>
+          <diffuse>1.0 0.0 0.0 1.0</diffuse>
+        </material>
+      </visual>
+
+      <visual name="camera_body_visual">
+        <pose>0.20 0 0.36 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.40 0.20 0.20</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.05 0.05 0.05 1.0</ambient>
+          <diffuse>0.05 0.05 0.05 1.0</diffuse>
+        </material>
+      </visual>
+
+      <sensor name="ptz_camera" type="camera">
+        <pose>0.40 0 0.36 0 0 0</pose>
+        <topic>/ptz_camera/image</topic>
+        <update_rate>5</update_rate>
+        <always_on>true</always_on>
+        <visualize>false</visualize>
+        <camera>
+          <horizontal_fov>1.0472</horizontal_fov>
+          <image>
+            <width>640</width>
+            <height>480</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.05</near>
+            <far>150.0</far>
+          </clip>
+        </camera>
+      </sensor>
+    </link>
+
+    <joint name="tilt_joint" type="revolute">
+      <parent>pan_link</parent>
+      <child>tilt_link</child>
+      <pose>0 0 0 0 0 0</pose>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <!-- <limit>
+          <lower>-1.0472</lower>
+          <upper>1.0472</upper>
+        </limit> -->
+        <dynamics>
+          <damping>0.1</damping>
+        </dynamics>
+      </axis>
+    </joint>
+  </model>
+</sdf>

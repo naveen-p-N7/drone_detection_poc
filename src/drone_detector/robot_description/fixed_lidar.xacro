@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"
+       name="fixed_lidar">
+
+  <!-- Include PTZ Camera Macro File -->
+  <xacro:include filename="ptz_camera.xacro" />
+
+  <!--
+    Fixed LiDAR detection system
+
+    Frame structure:
+
+      base_link
+          |
+          | 3.0 m
+          |
+      fixed_lidar
+  -->
+
+  <!-- ========================= -->
+  <!-- Base / pole                -->
+  <!-- ========================= -->
+
+  <link name="base_link">
+
+    <visual>
+      <origin xyz="0 0 1.5" rpy="0 0 0"/>
+
+      <geometry>
+        <cylinder radius="0.05" length="3.0"/>
+      </geometry>
+
+      <material name="pole_material">
+        <color rgba="0.6 0.6 0.6 1.0"/>
+      </material>
+    </visual>
+
+  </link>
+
+
+  <!-- ========================= -->
+  <!-- LiDAR frame               -->
+  <!-- ========================= -->
+
+  <link name="fixed_lidar">
+
+    <visual>
+      <origin xyz="0 0 0.03" rpy="0 0 0"/>
+
+      <geometry>
+        <cylinder radius="0.15" length="0.15"/>
+      </geometry>
+
+      <material name="lidar_material">
+        <color rgba="0.2 0.2 0.2 1.0"/>
+      </material>
+    </visual>
+
+  </link>
+
+
+  <!-- ========================= -->
+  <!-- Pole -> LiDAR transform   -->
+  <!-- ========================= -->
+
+  <joint name="fixed_lidar_joint" type="fixed">
+
+    <parent link="base_link"/>
+    <child link="fixed_lidar"/>
+
+    <origin xyz="0 0 3.0" rpy="0 0 0"/>
+
+  </joint>
+
+  <!-- Attach PTZ Camera on top of LiDAR -->
+  <xacro:ptz_camera parent_link="fixed_lidar">
+    <origin xyz="0 0 0.15" rpy="0 0 0"/>
+  </xacro:ptz_camera>
+
+</robot>

@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+
+<sdf version="1.9">
+  <model name="fixed_lidar">
+
+    <static>true</static>
+
+    <link name="lidar_link">
+
+      <!-- Visible mounting pole -->
+      <visual name="pole">
+        <pose>0 0 1.5 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.05</radius>
+            <length>3.0</length>
+          </cylinder>
+        </geometry>
+      </visual>
+
+      <!-- Visible LiDAR body -->
+      <visual name="lidar_body">
+        <pose>0 0 3.03 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.15</radius>
+            <length>0.15</length>
+          </cylinder>
+        </geometry>
+      </visual>
+
+      <!-- 3D LiDAR sensor -->
+      <sensor name="lidar" type="gpu_lidar">
+        <pose>0 0 3.0 0 0 0</pose>
+
+        <topic>/fixed_lidar/points</topic>
+        <gz_frame_id>fixed_lidar</gz_frame_id>
+
+        <update_rate>10</update_rate>
+        <always_on>true</always_on>
+        <visualize>true</visualize>
+
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>720</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.14159</min_angle>
+              <max_angle>3.14159</max_angle>
+            </horizontal>
+
+            <vertical>
+              <samples>64</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.523599</min_angle>
+              <max_angle>0.523599</max_angle>
+            </vertical>
+          </scan>
+
+          <range>
+            <min>0.1</min>
+            <max>150.0</max>
+            <resolution>0.01</resolution>
+          </range>
+        </lidar>
+      </sensor>
+
+    </link>
+  </model>
+</sdf>

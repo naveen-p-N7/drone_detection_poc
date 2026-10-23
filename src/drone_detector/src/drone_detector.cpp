@@ -102,7 +102,9 @@ void DroneDetectorNode::pointCloudCallback(
     std::chrono::duration<double, std::milli>(SteadyClock::now() - stage_start).count();
 
   stage_start = SteadyClock::now();
-  const auto clean_cloud = preprocessor_.filterFinitePoints(raw_cloud);
+  const auto finite_cloud = preprocessor_.filterFinitePoints(raw_cloud);
+  const auto clean_cloud = preprocessor_.removePtzSupportPole(
+    finite_cloud, msg->header.frame_id);
   const double finite_filter_ms =
     std::chrono::duration<double, std::milli>(SteadyClock::now() - stage_start).count();
 

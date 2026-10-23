@@ -31,7 +31,7 @@ public:
     last_update_steady_(std::chrono::steady_clock::now())
   {
     target_track_id_ = declare_parameter<int>("target_track_id", 1);
-    target_frame_ = declare_parameter<std::string>("target_frame", "camera_base_link");
+    target_frame_ = declare_parameter<std::string>("target_frame", "camera_sensor_link");
     tracks_topic_ = declare_parameter<std::string>("tracks_topic", "/drone_detection/tracks");
     joint_states_topic_ = declare_parameter<std::string>(
       "joint_states_topic", "/ptz_camera/measured_joint_states");
@@ -109,6 +109,10 @@ private:
     target_in_source.point.x += found->velocity.x * prediction_time;
     target_in_source.point.y += found->velocity.y * prediction_time;
     target_in_source.point.z += found->velocity.z * prediction_time;
+    // The track position is measured in the fixed LiDAR frame. Transform it
+    // using the latest camera pose so the error is relative to the live sensor
+    // orientation, not the orientation from when the cloud was captured.
+    target_in_source.header.stamp = nowRosTime();
 
     geometry_msgs::msg::PointStamped target_in_camera_base;
     try {
@@ -128,8 +132,11 @@ private:
     const double z = target_in_camera_base.point.z;
     const double horizontal_distance = std::hypot(x, y);
 
-    const double raw_pan = std::atan2(y, x);
-    double desired_tilt = std::atan2(-z, horizontal_distance);
+    // target_frame_ is camera_sensor_link, so these are angular image errors
+    // relative to the camera's current line of sight, not absolute stand angles.
+    const double pan_error = std::atan2(y, x);
+    const double tilt_error = std::atan2(-z, horizontal_distance);
+    double desired_tilt = measured_tilt_ + tilt_error;
     desired_tilt = std::clamp(desired_tilt, tilt_min_, tilt_max_);
 
     const auto now = std::chrono::steady_clock::now();
@@ -137,10 +144,8 @@ private:
       std::chrono::duration<double>(now - last_update_steady_).count(), 0.0, 0.25);
     last_update_steady_ = now;
 
-    // Close the pan loop against Gazebo's measured joint angle, rather than
-    // integrating the requested velocity and assuming the mechanism followed it.
-    const double pan_error = std::atan2(
-      std::sin(raw_pan - measured_pan_), std::cos(raw_pan - measured_pan_));
+    // Close the pan loop using the target's yaw error in the live camera frame.
+    // Gazebo-measured joint state updates that frame through robot_state_publisher.
     const double pan_velocity = std::clamp(
       pan_gain_ * pan_error, -max_pan_rate_, max_pan_rate_);
     commanded_tilt_ = moveToward(
@@ -157,8 +162,10 @@ private:
     RCLCPP_INFO_THROTTLE(
       get_logger(), *get_clock(), 1000,
       "Track %d target in %s: (%.2f, %.2f, %.2f) m; "
-      "command pan=%.1f deg, tilt=%.1f deg, prediction=%.2f s",
+      "camera-frame error=(%.1f, %.1f) deg, measured pan=%.1f deg, "
+      "measured tilt=%.1f deg, prediction=%.2f s",
       target_track_id_, target_frame_.c_str(), x, y, z,
+      radiansToDegrees(pan_error), radiansToDegrees(tilt_error),
       radiansToDegrees(measured_pan_), radiansToDegrees(measured_tilt_), prediction_time);
   }
 

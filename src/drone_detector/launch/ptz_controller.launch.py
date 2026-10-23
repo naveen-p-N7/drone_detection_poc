@@ -25,7 +25,7 @@ def generate_launch_description():
         parameters=[{
             "use_sim_time": LaunchConfiguration("use_sim_time"),
             "target_track_id": LaunchConfiguration("target_track_id"),
-            "target_frame": "camera_base_link",
+            "target_frame": "camera_sensor_link",
             "tracks_topic": "/drone_detection/tracks",
             "joint_states_topic": "/ptz_camera/measured_joint_states",
             "use_measurement": False,

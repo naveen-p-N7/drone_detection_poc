@@ -63,6 +63,29 @@
           <diffuse>0.25 0.25 0.25 1.0</diffuse>
         </material>
       </visual>
+      <visual name="support_pole_visual">
+        <!-- Model origin is at the top of the stand; extend the pole to ground. -->
+        <pose>0 0 -1.70 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.05</radius>
+            <length>3.40</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.55 0.55 0.55 1.0</ambient>
+          <diffuse>0.55 0.55 0.55 1.0</diffuse>
+        </material>
+      </visual>
+      <collision name="support_pole_collision">
+        <pose>0 0 -1.70 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.05</radius>
+            <length>3.40</length>
+          </cylinder>
+        </geometry>
+      </collision>
     </link>
 
     <!-- 2. PAN LINK -->
@@ -76,7 +99,8 @@
         </inertia>
       </inertial>
       <visual name="pan_visual">
-        <pose>0 0 0.15 0 0 0</pose>
+        <!-- Seat the pan cylinder directly on the base; its bottom is z=0.20. -->
+        <pose>0 0 0.05 0 0 0</pose>
         <geometry>
           <cylinder>
             <radius>0.22</radius>
@@ -110,7 +134,7 @@
 
     <!-- 3. TILT LINK -->
     <link name="tilt_link">
-      <pose>0 0 0.40 0 0 0</pose>
+      <pose>0 0 0.30 0 0 0</pose>
       <inertial>
         <mass>0.4</mass>
         <inertia>
@@ -169,13 +193,14 @@
     <joint name="tilt_joint" type="revolute">
       <parent>pan_link</parent>
       <child>tilt_link</child>
-      <pose>0 0 0 0 0 0</pose>
+      <!-- Hinge at the top of the pan cylinder. -->
+      <pose>0 0 0.10 0 0 0</pose>
       <axis>
         <xyz>0 1 0</xyz>
-        <!-- <limit>
+        <limit>
           <lower>-1.0472</lower>
           <upper>1.0472</upper>
-        </limit> -->
+        </limit>
         <dynamics>
           <damping>0.1</damping>
         </dynamics>

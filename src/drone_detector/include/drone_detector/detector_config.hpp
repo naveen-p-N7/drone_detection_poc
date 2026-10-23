@@ -39,6 +39,14 @@ inline constexpr std::size_t kMinimumClusterPoints = 8;
 // inline constexpr std::size_t kMinimumClusterPoints = 3; // hari's ros bag
 inline constexpr float kMinimumCandidateCentroidZ = -2.5F;
 
+// Static PTZ support pole and mounting base in the fixed_lidar sensor frame.
+// The LiDAR is at world x=5.0 m and the PTZ pole is at world x=5.6 m.
+inline constexpr float kPtzPoleCenterX = 0.6F;
+inline constexpr float kPtzPoleCenterY = 0.0F;
+inline constexpr float kPtzPoleExclusionRadius = 0.45F;
+inline constexpr float kPtzPoleMinZ = -3.1F;
+inline constexpr float kPtzPoleMaxZ = 0.8F;
+
 // RViz marker.
 inline constexpr float kMarkerLineWidthMeters = 0.015F;
 inline constexpr float kMarkerRed = 1.0F;

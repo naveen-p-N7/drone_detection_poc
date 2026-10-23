@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "drone_detector/detection_types.hpp"
 
 namespace drone_detector
@@ -22,6 +24,15 @@ public:
    * @return A new dense cloud containing only finite points.
    */
   PointCloudPtr filterFinitePoints(const PointCloudConstPtr & input) const;
+
+  /**
+   * @brief Remove LiDAR returns on the known stationary PTZ support assembly.
+   * @param input Finite input cloud.
+   * @param frame_id Coordinate frame from the incoming PointCloud2 header.
+   * @return A cloud without points inside the configured PTZ-pole cylinder.
+   */
+  PointCloudPtr removePtzSupportPole(
+    const PointCloudConstPtr & input, const std::string & frame_id) const;
 };
 
 }  // namespace drone_detector

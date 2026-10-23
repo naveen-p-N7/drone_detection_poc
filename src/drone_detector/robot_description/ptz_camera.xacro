@@ -5,6 +5,15 @@
 
     <!-- Camera Base Link -->
     <link name="camera_base_link">
+      <visual name="support_pole_visual">
+        <origin xyz="0 0 -1.70" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.05" length="3.40"/>
+        </geometry>
+        <material name="support_pole_material">
+          <color rgba="0.55 0.55 0.55 1.0"/>
+        </material>
+      </visual>
       <visual>
         <origin xyz="0 0 0.10" rpy="0 0 0"/>
         <geometry>
@@ -26,7 +35,8 @@
     <!-- Pan Link -->
     <link name="pan_link">
       <visual>
-        <origin xyz="0 0 0.15" rpy="0 0 0"/>
+        <!-- Seat the pan cylinder directly on the camera base. -->
+        <origin xyz="0 0 0.05" rpy="0 0 0"/>
         <geometry>
           <cylinder radius="0.22" length="0.10"/>
         </geometry>
@@ -66,7 +76,7 @@
     <joint name="tilt_joint" type="revolute">
       <parent link="pan_link"/>
       <child link="tilt_link"/>
-      <origin xyz="0 0 0.20" rpy="0 0 0"/>
+      <origin xyz="0 0 0.10" rpy="0 0 0"/>
       <axis xyz="0 1 0"/>
       <limit lower="-1.0472" upper="1.0472" effort="10" velocity="1.0"/>
     </joint>

@@ -73,9 +73,10 @@
 
   </joint>
 
-  <!-- Attach PTZ Camera on top of LiDAR -->
-  <xacro:ptz_camera parent_link="fixed_lidar">
-    <origin xyz="0 0 0.15" rpy="0 0 0"/>
+  <!-- PTZ camera is on a separate pole 1.25 m beside the LiDAR pole.
+       Its top is at z=3.4 m, slightly above the 3.0 m LiDAR stand. -->
+  <xacro:ptz_camera parent_link="base_link">
+    <origin xyz="0.6 0 3.4" rpy="0 0 0"/>
   </xacro:ptz_camera>
 
 </robot>
